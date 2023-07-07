@@ -1,5 +1,6 @@
 //  DREDGE AutoSplitter v1.0
 //  Author: Phrayse
+//  Big ups to SirBorris, and Joel from Black Salt Games.
 
 state("DREDGE")
 {
@@ -9,9 +10,14 @@ state("DREDGE")
     // int isRunning : "UnityPlayer.dll", 0x014AD6D4, 0x138, 0x110, 0x370, 0x210, 0x80, 0x2C, 0x2CC;
     
     // v1.2.0 prod | build 1892
-    bool isLoading : "UnityPlayer.dll", 0x14D23C8, 0x4;
-    int isRunning : "UnityPlayer.dll", 0x014AD6D4, 0x138, 0x110, 0x370, 0x220, 0x80, 0x2C, 0x2CC;
-    int relicCount : "UnityPlayer.dll", 0x14AD6D4, 0x138, 0x110, 0x370, 0x220, 0x80, 0x2C, 0x2C8;
+    // bool isLoading : "UnityPlayer.dll", 0x14D23C8, 0x4;
+    // int relicCount : "UnityPlayer.dll", 0x14AD6D4, 0x138, 0x110, 0x370, 0x220, 0x80, 0x2C, 0x2C8;
+    // int isRunning : "UnityPlayer.dll", 0x014AD6D4, 0x138, 0x110, 0x370, 0x220, 0x80, 0x2C, 0x2CC;
+
+    // v1.2.0 prod | build 1922
+    bool isLoading : "UnityPlayer.dll", 0x01481C40, 0x2C, 0x54;
+    int relicCount : "UnityPlayer.dll", 0x014DCEE4, 0x7BC, 0xC58, 0xE30, 0x230;
+    int isRunning : "UnityPlayer.dll", 0x014DCEE4, 0x7BC, 0xC58, 0xE30; 0x234;
 }
 
 startup
@@ -19,7 +25,7 @@ startup
     // Set LiveSplit timing method to Game Time to allow for load removal.
     if (timer.CurrentTimingMethod == TimingMethod.RealTime)
     {
-        if (MessageBox.Show("Spooky Boat Game now has load removal!\nEnable it by using Game Time?",
+        if (MessageBox.Show("Spooky Boat Game now has load removal for PC runs!\nEnable it by using Game Time?\n*not available for Console*",
         "DREDGE", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
         {
             timer.CurrentTimingMethod = TimingMethod.GameTime;
