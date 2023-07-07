@@ -2,101 +2,62 @@
 //  Author: Phrayse
 //  Big ups to SirBorris, and Joel from Black Salt Games.
 
-state("DREDGE")
-{
-    // v1.2.0 prod | build 1883
-    // bool isLoading : "UnityPlayer.dll", 0x014DE26C, 0x7C, 0x4, 0x48, 0x1C, 0xC, 0x0, 0x228;
-    // int relicCount : "UnityPlayer.dll", 0x014DE26C, 0x7C, 0x4, 0x48, 0x1C, 0xC, 0x0, 0x230;
-    // int isRunning : "UnityPlayer.dll", 0x014AD6D4, 0x138, 0x110, 0x370, 0x210, 0x80, 0x2C, 0x2CC;
-    
-    // v1.2.0 prod | build 1892
-    // bool isLoading : "UnityPlayer.dll", 0x14D23C8, 0x4;
-    // int relicCount : "UnityPlayer.dll", 0x14AD6D4, 0x138, 0x110, 0x370, 0x220, 0x80, 0x2C, 0x2C8;
-    // int isRunning : "UnityPlayer.dll", 0x014AD6D4, 0x138, 0x110, 0x370, 0x220, 0x80, 0x2C, 0x2CC;
-
-    // v1.2.0 prod | build 1922
-    bool isLoading : "UnityPlayer.dll", 0x01481C40, 0x2C, 0x54;
-    int relicCount : "UnityPlayer.dll", 0x014DCEE4, 0x7BC, 0xC58, 0xE30, 0x230;
-    int isRunning : "UnityPlayer.dll", 0x014DCEE4, 0x7BC, 0xC58, 0xE30, 0x234;
-}
+state("DREDGE") {}
 
 startup
 {
-    // Set LiveSplit timing method to Game Time to allow for load removal.
-    if (timer.CurrentTimingMethod == TimingMethod.RealTime)
-    {
-        if (MessageBox.Show("Spooky Boat Game now has load removal for PC runs!\nEnable it by using Game Time?\n(not available for console)",
-        "DREDGE", MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation) == DialogResult.OK)
-        {
-            timer.CurrentTimingMethod = TimingMethod.GameTime;
-        }
-    }
+    refreshRate = 30;
 
-    // Dictionary of all split options.
-    vars.splitSettings = new Dictionary<string, Tuple<bool, string, string, string>>()
+    Assembly.Load(File.ReadAllBytes("Components/asl-help")).CreateInstance("Unity");
+    vars.Helper.GameName = "DREDGE";
+
+    dynamic[,] dredgeSettings =
     {
-        {"relics", Tuple.Create(true, "Return Relics", "", "Split upon returning Relics")},
-        {"relics1234", Tuple.Create(true, "Relics 1-4", "relics", "Order doesn't matter")},
-        {"relic5", Tuple.Create(false, "Relic 5", "relics", "Mostly just used by 100% runners")},
-        {"final", Tuple.Create(true, "Final Split", "", "Applies to both Keeper & Collector endings")}
+        { null, "relics", "Return Relics", true, "Split upon returning Relics" },
+            { "relics", "r1", "Relic 1", true,  null },
+            { "relics", "r2", "Relic 2", true,  null },
+            { "relics", "r3", "Relic 3", true,  null },
+            { "relics", "r4", "Relic 4", true,  null },
+            { "relics", "r5", "Relic 5", false, "Mostly just used by 100% runners" },
+        { null, "final", "Final Split", true, "Applies to both Keeper & Collector endings" }
     };
 
-    // Create Settings for all Split options.
-    foreach (var setting in vars.splitSettings)
-    {
-        settings.Add(setting.Key, setting.Value.Item1, setting.Value.Item2, setting.Value.Item3 != "" ? setting.Value.Item3 : null);
-        settings.SetToolTip(setting.Key, setting.Value.Item4);
-    }
+    vars.Helper.Settings.CreateCustom(dredgeSettings, 4, 1, 3, 2, 5);
+
+    vars.Helper.AlertGameTime();
 }
 
 init
 {
-    refreshRate = 30;
-}
+    vars.Helper.TryLoad = (Func<dynamic, bool>)(mono =>
+    {
+        vars.Helper["IsLoading"] = mono.Make<bool>("AutoSplitterData", "isLoading");
+        // vars.Helper["RelicsAcquired"] = mono.Make<int>("AutoSplitterData", "relicsAcquired");
+        vars.Helper["RelicsRelinquished"] = mono.Make<int>("AutoSplitterData", "relicsRelinquished");
+        vars.Helper["IsRunning"] = mono.Make<int>("AutoSplitterData", "isRunning");
 
-update
-{
-    // Debug - change ### to whatever is being tested.
-    // if (current.### != old.###)
-    // { print("### changed, now " + current.###.ToString()); }
+        return true;
+    });
 }
 
 onStart
 {
-    // Initialise counter objects for split settings.
-    vars.relicCounter = 0;
+    vars.startingRelics = current.RelicsRelinquished;
 }
 
 start
 {
     // isRunning is set to 0 in the main menu
-    if (old.isRunning == 0 && current.isRunning == 1)
-    {
-        return true;
-    }
+    return old.IsRunning == 0 && current.IsRunning == 1;
 }
 
 split
 {
-    // List of all split conditions.
-    vars.conditions = new List<Func<bool>>()
-    {
-        () => current.relicCount == old.relicCount + 1 &&
-            (++vars.relicCounter < 5 && settings["relics1234"] ||
-            settings["relic5"] && vars.relicCounter > 4),
-        () => old.isRunning == 1 && current.isRunning == 2 && settings["final"]
-    };
-
-    foreach (var condition in vars.conditions)
-    {
-        if (condition())
-        {
-            return true;
-        }
-    }
+    return old.RelicsRelinquished < current.RelicsRelinquished && settings["r" + current.RelicsRelinquished - vars.startingRelics]
+        || old.IsRunning == 1 && current.IsRunning == 2 && settings["final"];
 }
 
 isLoading
 {
-    return current.isLoading;
+    return current.IsLoading;
 }
