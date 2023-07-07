@@ -17,7 +17,7 @@ state("DREDGE")
     // v1.2.0 prod | build 1922
     bool isLoading : "UnityPlayer.dll", 0x01481C40, 0x2C, 0x54;
     int relicCount : "UnityPlayer.dll", 0x014DCEE4, 0x7BC, 0xC58, 0xE30, 0x230;
-    int isRunning : "UnityPlayer.dll", 0x014DCEE4, 0x7BC, 0xC58, 0xE30; 0x234;
+    int isRunning : "UnityPlayer.dll", 0x014DCEE4, 0x7BC, 0xC58, 0xE30, 0x234;
 }
 
 startup
@@ -25,8 +25,8 @@ startup
     // Set LiveSplit timing method to Game Time to allow for load removal.
     if (timer.CurrentTimingMethod == TimingMethod.RealTime)
     {
-        if (MessageBox.Show("Spooky Boat Game now has load removal for PC runs!\nEnable it by using Game Time?\n*not available for Console*",
-        "DREDGE", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+        if (MessageBox.Show("Spooky Boat Game now has load removal for PC runs!\nEnable it by using Game Time?\n(not available for console)",
+        "DREDGE", MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation) == DialogResult.OK)
         {
             timer.CurrentTimingMethod = TimingMethod.GameTime;
         }
@@ -41,21 +41,12 @@ startup
         {"final", Tuple.Create(true, "Final Split", "", "Applies to both Keeper & Collector endings")}
     };
 
-    // Create all split options.
+    // Create Settings for all Split options.
     foreach (var setting in vars.splitSettings)
     {
         settings.Add(setting.Key, setting.Value.Item1, setting.Value.Item2, setting.Value.Item3 != "" ? setting.Value.Item3 : null);
         settings.SetToolTip(setting.Key, setting.Value.Item4);
     }
-
-    // List of all split conditions.
-    vars.conditions = new List<Func<bool>>()
-    {
-        () => current.relicCount == old.relicCount + 1 &&
-            (++vars.relicCounter < 5 && settings["relics1234"] ||
-            settings["relic5"] && vars.relicCounter > 4),
-        () => old.isRunning == 1 && current.isRunning == 2 && settings["final"]
-    };
 }
 
 init
@@ -87,6 +78,15 @@ start
 
 split
 {
+    // List of all split conditions.
+    vars.conditions = new List<Func<bool>>()
+    {
+        () => current.relicCount == old.relicCount + 1 &&
+            (++vars.relicCounter < 5 && settings["relics1234"] ||
+            settings["relic5"] && vars.relicCounter > 4),
+        () => old.isRunning == 1 && current.isRunning == 2 && settings["final"]
+    };
+
     foreach (var condition in vars.conditions)
     {
         if (condition())
