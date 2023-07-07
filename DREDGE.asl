@@ -40,6 +40,11 @@ init
     });
 }
 
+onStart
+{
+    vars.startingRelics = current.RelicsRelinquished;
+}
+
 start
 {
     // isRunning is set to 0 in the main menu
@@ -48,7 +53,7 @@ start
 
 split
 {
-    return old.RelicsRelinquished < current.RelicsRelinquished && settings["r" + current.RelicsRelinquished]
+    return old.RelicsRelinquished < current.RelicsRelinquished && settings["r" + current.RelicsRelinquished - vars.startingRelics]
         || old.IsRunning == 1 && current.IsRunning == 2 && settings["final"];
 }
 
