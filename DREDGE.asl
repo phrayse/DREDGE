@@ -43,7 +43,7 @@ init
 start
 {
     // isRunning is set to 0 in the main menu
-    return old.isRunning == 0 && current.isRunning == 1;
+    return old.IsRunning == 0 && current.IsRunning == 1;
 }
 
 split
