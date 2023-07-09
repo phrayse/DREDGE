@@ -53,7 +53,8 @@ start
 
 split
 {
-    return old.RelicsRelinquished < current.RelicsRelinquished && settings["r" + current.RelicsRelinquished - vars.startingRelics]
+    int currentRelic = current.RelicsRelinquished - vars.startingRelics;
+    return old.RelicsRelinquished < current.RelicsRelinquished && settings["r" + currentRelic]
         || old.IsRunning == 1 && current.IsRunning == 2 && settings["final"];
 }
 
